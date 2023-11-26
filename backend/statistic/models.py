@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 from django.db import models
@@ -7,6 +8,39 @@ from django.core.validators import (
 )
 
 # Create your models here.
+
+model_action_choices = (
+    ('R', 'Read'),
+    ('C', 'Create'),
+    ('U', 'Update'),
+    ('D', 'Delete')
+)
+
+class Log(models.Model):
+    model = models.CharField(
+        max_length=50,
+    )
+    action = models.CharField(
+        max_length=6,
+        choices=model_action_choices
+    )
+    instance = models.CharField(
+        max_length=50,
+        null=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return f'{self.model} {self.action} {self.created_at}'
+
+    class Meta:
+        ordering=['-created_at']
+        verbose_name_plural='Logs'
 
 class BigLottery(models.Model):
     period = models.CharField(
