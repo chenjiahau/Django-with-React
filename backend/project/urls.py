@@ -21,3 +21,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include("api.urls")),
 ]
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/other', include("api.urls.other_urls")),
+    path('api/biglottery', include('api.urls.biglottery_urls')),
+]
