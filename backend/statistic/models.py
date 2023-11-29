@@ -84,6 +84,11 @@ class BigLottery(models.Model):
         help_text = '請輸入1~49的整數',
         validators = [MinValueValidator(1), MaxValueValidator(49)]
     )
+    flag = models.BooleanField(
+        verbose_name='有效樣本',
+        help_text='請勾選是否納入統計',
+        default=True
+    )
     created_at = models.DateTimeField(
         auto_now_add=True
     )
