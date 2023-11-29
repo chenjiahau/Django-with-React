@@ -43,11 +43,25 @@ class Log(models.Model):
         verbose_name_plural='Logs'
 
 class BigLottery(models.Model):
-    period = models.CharField(
-        verbose_name='期別',
-        help_text='輸入九碼期別， 例：103000001期)',
-        max_length=9,
-        validators=[MinLengthValidator(9), MaxLengthValidator(9)]
+    period = models.IntegerField(
+        verbose_name='期數',
+        help_text='請輸入整數',
+        validators=[MinValueValidator(1), MaxValueValidator(999)]
+    )
+    month = models.IntegerField(
+        verbose_name='月份',
+        help_text='請輸入整數',
+        validators=[MinValueValidator(1), MaxValueValidator(12)]
+    )
+    day = models.IntegerField(
+        verbose_name='日期',
+        help_text='請輸入整數',
+        validators=[MinValueValidator(1), MaxValueValidator(31)]
+    )
+    day_of_week = models.IntegerField(
+        verbose_name='星期',
+        help_text='請輸入整數',
+        validators=[MinValueValidator(1), MaxValueValidator(7)]
     )
     number1 = models.IntegerField(
         verbose_name='第一個號碼',
@@ -83,6 +97,11 @@ class BigLottery(models.Model):
         verbose_name = '第六個號碼',
         help_text = '請輸入1~49的整數',
         validators = [MinValueValidator(1), MaxValueValidator(49)]
+    )
+    special_number = models.IntegerField(
+        verbose_name='特別號碼',
+        help_text='請輸入1~49的整數',
+        validators=[MinValueValidator(1), MaxValueValidator(49)]
     )
     flag = models.BooleanField(
         verbose_name='有效樣本',
