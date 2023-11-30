@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'import_export',
     'statistic.apps.StatisticConfig'
 ]
 
@@ -175,3 +176,5 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer',
     'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
 }
+
+IMPORT_EXPORT_USE_TRANSACTIONS = True

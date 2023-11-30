@@ -48,6 +48,10 @@ class BigLottery(models.Model):
         help_text='請輸入整數',
         validators=[MinValueValidator(1), MaxValueValidator(999)]
     )
+    year = models.IntegerField(
+        verbose_name='年份',
+        help_text='請輸入整數',
+    )
     month = models.IntegerField(
         verbose_name='月份',
         help_text='請輸入整數',
@@ -116,7 +120,7 @@ class BigLottery(models.Model):
     )
 
     def __str__(self):
-        return f'{self.period}'
+        return f'{self.year}-{self.period}'
 
     class Meta:
         ordering=['-period']
