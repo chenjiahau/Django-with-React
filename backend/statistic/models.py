@@ -48,6 +48,10 @@ class BigLottery(models.Model):
         help_text='請輸入整數',
         validators=[MinValueValidator(1), MaxValueValidator(999)]
     )
+    date = models.IntegerField(
+        verbose_name='日期',
+        help_text='請輸入整數',
+    )
     year = models.IntegerField(
         verbose_name='年份',
         help_text='請輸入整數',

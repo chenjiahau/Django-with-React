@@ -1,4 +1,8 @@
 import csv
+import json
+from datetime import datetime
+from dateutil import relativedelta
+
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 
@@ -7,6 +11,67 @@ from rest_framework.response import Response
 
 from statistic.models import BigLottery
 from api.serializers import BigLotterySerializer
+
+def getStatistics(start_year, end_year, start_month, end_month):
+    start_date = int(str(start_year) + str(start_month if start_month > 10 else "0" + str(start_month)) + str('01'))
+    end_date = int(str(end_year) + str(end_month if end_month > 10 else "0" + str(end_month)) + str('31'))
+    data = BigLottery.objects.filter(date__range=[start_date, end_date]).order_by('-month', '-day')
+    statistic_list = []
+
+    for n in range(1, 50):
+        statistic_list.append({
+            'number': n,
+            'time': 0,
+            'percent': 0,
+        })
+
+    for item in data:
+        statistic_list[item.number1-1]['time'] += 1
+        statistic_list[item.number2-1]['time'] += 1
+        statistic_list[item.number3-1]['time'] += 1
+        statistic_list[item.number4-1]['time'] += 1
+        statistic_list[item.number5-1]['time'] += 1
+        statistic_list[item.number6-1]['time'] += 1
+
+    statistic_list.sort(key=lambda x: x['time'], reverse=True)
+
+    return statistic_list
+
+def getStatisticsByTime(now_date, months_ago, statistic_list):
+    time_group = []
+    for item in statistic_list:
+        time_group.append(item['time'])
+    time_group = list(set(time_group))
+
+    time_list = []
+    total_times = 0
+    for time in time_group:
+        total_times += time
+
+        time_list.append({
+            'time': time,
+            'percent': 0,
+            'numbers': []
+        })
+
+    for time in time_list:
+        time['percent'] = round((time['time'] / total_times) * 100)
+
+    for item in statistic_list:
+        for time in time_list:
+            if item['time'] == time['time']:
+                time['numbers'].append(item['number'])
+
+    for time in time_list:
+        time['numbers'].sort()
+
+    statistic = {
+        'end_date': now_date.strftime('%Y-%m-%d'),
+        'start_date': months_ago.strftime('%Y-%m-%d'),
+        'time_list': time_list
+    }
+
+    return statistic
 
 # Create your views here.
 
@@ -19,42 +84,17 @@ def getBiglotterys(request):
 
 
 @api_view(['GET'])
-def getStatisticByDateRange(request, start_year, end_year, start_month, end_month):
-    f = request.GET.get('f')
-    cond1 = Q(year__range=(start_year, end_year))
-    cond2 = Q(month__range=(start_month, end_month))
-    data = BigLottery.objects.filter(cond1 & cond2).order_by('-month', '-day')
-    stat = {}
+def getByMonth(request, month):
+    now_date = datetime.today()
+    months_ago = now_date - relativedelta.relativedelta(months=month)
 
-    for n in range(1, 50):
-        stat[n] = {
-            'time': 0,
-            'percent': 0,
-        }
+    start_year = months_ago.year
+    end_year = now_date.year
+    start_month = months_ago.month
+    end_month = now_date.month
 
-    for item in data:
-        stat[item.number1]['time'] += 1
-        stat[item.number2]['time'] += 1
-        stat[item.number3]['time'] += 1
-        stat[item.number4]['time'] += 1
-        stat[item.number5]['time'] += 1
-        stat[item.number6]['time'] += 1
+    statistic_list = getStatistics(start_year, end_year, start_month, end_month)
+    statistic = getStatisticsByTime(now_date, months_ago, statistic_list)
 
-    for item in stat:
-        stat[item]['percent'] = round(stat[item]['time'] / (len(data) * 6) * 100, 2)
+    return JsonResponse(statistic, safe=False)
 
-    print(f)
-    if f == '':
-        return JsonResponse(stat, safe=False)
-    else:
-        response = HttpResponse(
-            content_type='text/csv',
-            headers={"Content-Disposition": 'attachment; filename="stat.csv"'},
-        )
-
-        writer = csv.writer(response)
-        writer.writerow(['Number', 'Times', 'Percent'])
-        for item in stat:
-            writer.writerow([item, stat[item]['time'], stat[item]['percent']])
-
-        return response
