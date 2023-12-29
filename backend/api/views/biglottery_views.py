@@ -12,10 +12,14 @@ from rest_framework.response import Response
 from statistic.models import BigLottery
 from api.serializers import BigLotterySerializer
 
-def getStatistics(start_year, end_year, start_month, end_month):
+def getData(start_year, end_year, start_month, end_month):
     start_date = int(str(start_year) + str(start_month if start_month > 10 else "0" + str(start_month)) + str('01'))
     end_date = int(str(end_year) + str(end_month if end_month > 10 else "0" + str(end_month)) + str('31'))
-    data = BigLottery.objects.filter(date__range=[start_date, end_date]).order_by('-month', '-day')
+    data = BigLottery.objects.filter(date__range=[start_date, end_date]).order_by('-date', '-month', '-day')
+
+    return data
+
+def getStatistics(data):
     statistic_list = []
 
     for n in range(1, 50):
@@ -51,7 +55,8 @@ def getStatisticsByTime(now_date, months_ago, statistic_list):
         time_list.append({
             'time': time,
             'percent': 0,
-            'numbers': []
+            'numbers': [],
+            'number_date': []
         })
 
     for time in time_list:
@@ -93,8 +98,54 @@ def getByMonth(request, month):
     start_month = months_ago.month
     end_month = now_date.month
 
-    statistic_list = getStatistics(start_year, end_year, start_month, end_month)
+    data = getData(start_year, end_year, start_month, end_month)
+    statistic_list = getStatistics(data)
     statistic = getStatisticsByTime(now_date, months_ago, statistic_list)
+
+    for time_item in statistic['time_list']:
+        for number in time_item['numbers']:
+            number_data = {}
+            for data_item in data:
+                if (number == data_item.number1):
+                    number_data = {
+                        'number': data_item.number1,
+                        'last_date': data_item.date,
+                    }
+                    break
+                elif (number == data_item.number2):
+                    number_data = {
+                        'number': data_item.number2,
+                        'date': data_item.date,
+                    }
+                    break
+                elif (number == data_item.number3):
+                    number_data = {
+                        'number': data_item.number3,
+                        'last_date': data_item.date,
+                    }
+                    break
+                elif (number == data_item.number4):
+                    number_data = {
+                        'number': data_item.number4,
+                        'last_date': data_item.date,
+                    }
+                    break
+                elif (number == data_item.number5):
+                    number_data = {
+                        'number': data_item.number5,
+                        'last_date': data_item.date,
+                    }
+                    break
+                elif (number == data_item.number6):
+                    number_data = {
+                        'last_date': data_item.date,
+                        'month': data_item.month,
+                        'day': data_item.day,
+                        'number': data_item.number6,
+                    }
+                    break
+
+            time_item['number_date'].append(number_data)
 
     return JsonResponse(statistic, safe=False)
 
